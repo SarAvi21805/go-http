@@ -1,8 +1,8 @@
-# 09 - Query Parameters
+# 10 - POST JSON
 
-En esta etapa la API incorpora soporte para parámetros en la URL, permitiendo filtrar resultados utilizando query parameters.
+En esta etapa la API incorpora soporte para crear nuevos recursos utilizando el método `POST` con un body en formato JSON.
 
-Se mantiene el modelo basado en archivo JSON como fuente de datos, pero ahora el comportamiento del endpoint cambia según los parámetros recibidos.
+Se mantiene el modelo basado en archivo como fuente inicial de datos, pero ahora el servidor permite modificar el estado en memoria.
 
 ---
 
@@ -10,11 +10,11 @@ Se mantiene el modelo basado en archivo JSON como fuente de datos, pero ahora el
 
 Comprender:
 
-* Qué son los query parameters
-* Cómo acceder a ellos con `r.URL.Query()`
-* Cómo convertir valores de string a otros tipos (`strconv.Atoi`)
-* Cómo validar input del usuario
-* Cómo devolver diferentes respuestas según parámetros recibidos
+* Cómo leer el body de una petición HTTP
+* Cómo usar `json.NewDecoder` para decodificar JSON
+* Cómo validar datos enviados por el cliente
+* Cómo generar identificadores dinámicamente
+* Cómo devolver `201 Created`
 
 ---
 
@@ -37,48 +37,58 @@ La estructura no cambia respecto a la rama anterior.
 
 Antes:
 
-* `GET /api/teams` devolvía siempre todos los equipos
+* Solo existían endpoints `GET`
+* Los datos eran únicamente de lectura
 
 Ahora:
 
-* `GET /api/teams` devuelve todos los equipos
-* `GET /api/teams?id=1` devuelve un equipo específico
-
-El mismo endpoint ahora tiene comportamiento condicional basado en parámetros.
+* `POST /api/teams` permite crear nuevos equipos
+* El servidor decodifica JSON desde el body
+* Se valida el input antes de procesarlo
+* Se devuelve `201 Created` cuando el recurso es creado correctamente
 
 ---
 
-## 🧩 Ejemplos de uso
+## 🧩 Ejemplo de uso
 
-Obtener todos los equipos:
-
-```
-GET /api/teams
-```
-
-Obtener un equipo específico:
+Crear un nuevo equipo:
 
 ```
-GET /api/teams?id=1
+POST /api/teams
 ```
 
-Si el parámetro es inválido:
+Body (JSON):
 
-* Se devuelve `400 Bad Request`
+```json
+{
+  "name": "Test FC"
+}
+```
 
-Si el equipo no existe:
+Respuesta esperada:
 
-* Se devuelve `404 Not Found`
+```json
+{
+  "id": 21,
+  "name": "Test FC"
+}
+```
+
+Status:
+
+```
+201 Created
+```
 
 ---
 
 ## 🔎 Conceptos introducidos
 
-* `r.URL.Query()` para leer parámetros de la URL
-* Uso de `query.Get("id")`
-* Conversión de tipos con `strconv.Atoi`
-* Validación de parámetros
-* Respuestas condicionales según input
+* `json.NewDecoder(r.Body).Decode(&struct)`
+* Validación básica de campos requeridos
+* Generación automática de ID
+* Mutación de datos en memoria (`append`)
+* Uso correcto de códigos de estado HTTP
 
 ---
 
@@ -93,12 +103,12 @@ ports:
   - "8080:80"
 ```
 
-Probar con:
+Probar con Postman o curl:
 
 ```bash
-curl http://localhost:8080/api/ping
-curl http://localhost:8080/api/teams
-curl http://localhost:8080/api/teams?id=1
+curl -X POST http://localhost:8080/api/teams \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test FC"}'
 ```
 
 ---
@@ -107,9 +117,6 @@ curl http://localhost:8080/api/teams?id=1
 
 En esta etapa entendemos que:
 
-* Los endpoints pueden cambiar su comportamiento según parámetros
-* Todos los parámetros llegan como strings
-* Es responsabilidad del backend validar y convertir los datos
-
-Este es el paso previo antes de modelar recursos utilizando path parameters y construir una API REST más formal.
-
+* Las APIs no solo leen datos, también los crean
+* El backend debe validar y procesar el body de las peticiones
+* HTTP define semántica clara para creación de recursos (`POST` + `201`)
