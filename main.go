@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -89,6 +88,8 @@ func handleItemByID(w http.ResponseWriter, r *http.Request) {
 		getGameByID(w, id)
 	case http.MethodPut:
 		putGame(w, r, id)
+	case http.MethodPatch:
+		patchGame(w, r, id)
 	case http.MethodDelete:
 		deleteGame(w, id)
 	default:
@@ -187,6 +188,31 @@ func deleteGame(w http.ResponseWriter, id int) {
 		}
 	}
 	sendError(w, "No se pudo eliminar: no existe", http.StatusNotFound)
+}
+
+func patchGame(w http.ResponseWriter, r *http.Request, id int) {
+	var updates map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+		sendError(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for i, g := range games {
+		if g.ID == id {
+			// Actualizando los campos que vengan en el JSON
+			if val, ok := updates["title"]; ok { games[i].Title = val.(string) }
+			if val, ok := updates["genre"]; ok { games[i].Genre = val.(string) }
+			if val, ok := updates["rating"]; ok { games[i].Rating = val.(float64) }
+			
+			saveData()
+			json.NewEncoder(w).Encode(games[i])
+			return
+		}
+	}
+	sendError(w, "No encontrado", http.StatusNotFound)
 }
 
 // Helpers
