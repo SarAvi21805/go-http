@@ -32,7 +32,7 @@ var (
 	games     []Game
 	mutex     sync.Mutex
 	dataFile  = "data/games.json"
-	serverPort = "4722"
+	serverPort = "24722"
 )
 
 func main() {
