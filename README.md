@@ -1,86 +1,69 @@
-# Backend con Go — De TCP a APIs RESTful
+# API de Gestión de Videojuegos - Ejercicio 4
 
-Este repositorio es un recorrido progresivo para entender cómo funciona un servidor backend en Go desde la base.
+Esta es una API RESTful construida con la **librería estándar de Go** (sin frameworks externos). Permite gestionar una colección de videojuegos con persistencia de datos en un archivo JSON local.
 
-El objetivo no es aprender un framework.
+## Información del Estudiante
+- **Nombre:** Alejandra Saraí Avilés González
+- **Carnet:** 24722
+- **Puerto Asignado:** 24722
 
-El objetivo es entender el problema antes de usar la solución.
+## Tema Elegido
+Gestión de una biblioteca de **Videojuegos**. Cada elemento cuenta con: `id`, `title`, `genre`, `platform`, `release_year` y `rating`.
 
----
+## Endpoints Implementados
 
-## 🧠 Enfoque
+| Método | Endpoint | Parámetros | Descripción |
+|--------|----------|------------|-------------|
+| **GET** | `/api/items` | Ninguno | Lista todos los videojuegos. |
+| **GET** | `/api/items?id=1` | Query Param | Filtra un videojuego por su ID. |
+| **GET** | `/api/items?genre=RPG` | Query Param | Filtra videojuegos por género (Multi-filtro). |
+| **GET** | `/api/items/1` | Path Param | Obtiene un videojuego específico por su ID en la ruta. |
+| **POST** | `/api/items` | Body JSON | Crea un nuevo videojuego y lo guarda en el archivo JSON. |
+| **PUT** | `/api/items/1` | Path Param + Body | Reemplaza un videojuego existente por uno nuevo. |
+| **PATCH** | `/api/items/1` | Path Param + Body | Actualiza parcialmente un videojuego (ej. solo el rating). |
+| **DELETE** | `/api/items/1` | Path Param | Elimina permanentemente un videojuego de la lista. |
 
-Comenzamos desde el nivel más bajo posible:
+## Características Técnicas (Criterios de Evaluación)
+- **Persistencia Real:** Cualquier cambio (POST, PUT, PATCH, DELETE) se guarda automáticamente en el archivo `data/games.json`.
+- **Validación Robusta:** El sistema verifica que los campos obligatorios estén presentes y maneja errores de formato JSON.
+- **Manejo de Errores:** Respuestas de error consistentes con formato `{"status": 4xx, "message": "..."}`.
+- **Docker:** Archivo `Dockerfile` configurado para desplegar la aplicación en un contenedor aislado.
 
-* TCP puro
-* Construcción manual de HTTP
-* Routing manual
-* Uso de la librería estándar
-* Separación de archivos
-* Servir recursos estáticos
-* Generación de vistas
-* Construcción de APIs JSON
-* Persistencia en archivo
-* Manejo de parámetros
-* Creación de recursos
+## Instrucciones para Ejecutar
 
-Cada rama representa una capa adicional de abstracción.
+### 1. Ejecución Local (Go)
+- Asegúrate de estar en la raíz del proyecto y ejecuta:
+        '''bash
+        go run main.go
+- El servidor iniciará en: http://localhost:24722
 
-La idea es poder moverse entre ramas y observar cómo evoluciona el servidor.
+### 2. Ejecución con Docker
+- Para construir la imagen y correr el contenedor:
+        '''bash
+        docker build -t api-videojuegos .
+        docker run -p 24722:24722 api-videojuegos
 
----
+## Ejemplos de JSON para Pruebas
 
-## 🎯 Qué se busca lograr
+### Crear / Actualizar (POST / PUT)
+'''json
+{
+  "id": 11,
+  "title": "Starfield",
+  "genre": "RPG",
+  "platform": "Xbox/PC",
+  "release_year": 2023,
+  "rating": 8.5
+}
 
-Que el estudiante entienda:
+### Actualización Parcial (PATCH)
+'''json
+{
+  "rating": 9.8
+}
 
-* Qué es realmente HTTP
-* Qué ocurre cuando el navegador hace una petición
-* Qué abstrae `net/http`
-* Cómo funciona el routing
-* Cómo se sirven archivos
-* Cómo se renderizan vistas
-* Cómo se construye una API JSON
-* Cómo se modelan recursos y operaciones
-
----
-
-## 🐳 Entorno
-
-Todos los ejemplos están preparados para ejecutarse con Docker y Docker Compose.
-
-Cada rama contiene sus propias instrucciones para levantar el proyecto.
-
----
-
-## 📚 Ramas del repositorio
-
-**[01-raw-tcp](https://github.com/menene/go-http/tree/01-raw-tcp)**  
-Servidor construido directamente sobre TCP. Se construye manualmente la respuesta HTTP para entender cómo funciona el protocolo desde la base.
-
-**[02-http-manual-routing](https://github.com/menene/go-http/tree/02-http-manual-routing)**  
-Se parsea manualmente la primera línea del request para extraer método y ruta, implementando routing básico y códigos de estado.
-
-**[03-net-http-basics](https://github.com/menene/go-http/tree/03-net-http-basics)**  
-Se introduce la librería estándar `net/http`, eliminando el manejo manual del protocolo y mostrando el valor de la abstracción.
-
-**[04-serve-html-files](https://github.com/menene/go-http/tree/04-serve-html-files)**  
-El servidor comienza a servir archivos HTML reales junto con recursos estáticos como CSS e imágenes.
-
-**[05-templates](https://github.com/menene/go-http/tree/05-templates)**  
-Se introduce `html/template`, permitiendo generar vistas desde el servidor y reutilizar un layout común.
-
-**[06-posts](https://github.com/menene/go-http/tree/06-posts)**  
-Se incorporan formularios HTML y el método POST, permitiendo que el servidor reciba y procese datos enviados por el cliente.
-
-**[07-json-api](https://github.com/menene/go-http/tree/07-json-api)**  
-Se elimina la capa de vistas y el servidor pasa a ser una API pura que devuelve JSON utilizando `encoding/json`.
-
-**[08-file-db](https://github.com/menene/go-http/tree/08-file-db)**  
-La API comienza a leer datos desde un archivo JSON, simulando una base de datos basada en archivo.
-
-**[09-query-params](https://github.com/menene/go-http/tree/09-query-params)**  
-Se agregan parámetros en la URL (`?id=`), permitiendo filtrar resultados y modificar el comportamiento del endpoint según el input recibido.
-
-**[10-post-json](https://github.com/menene/go-http/tree/10-post-json)**  
-Se incorpora soporte para `POST` con body en formato JSON, permitiendo crear nuevos recursos, validar datos y devolver `201 Created`.
+## Estructura del Repositorio
+- /data/games.json: Base de datos en formato JSON (Persistencia).
+- main.go: Servidor, rutas y lógica de negocio.
+- Dockerfile: Configuración de contenedor.
+- README.md: Documentación del proyecto.
